@@ -1,0 +1,75 @@
+@import url("font-awesome.min.css");
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+/* Padding added to move header out from under navbar */
+#site-header {
+    padding-top: 20px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    background-color: rgba( 61, 153, 112, .5);
+    font-family: 'Roboto', sans-serif;
+}
+
+.card-stream {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.card-avatar {
+   height: 150px;
+   width: 150px;
+   z-index: 2;
+   margin: 1em 1em 0 1em;
+}
+
+.card {
+    transition: 0.3s;
+    width: 50%;
+    border-radius: 5px;
+    margin: 0 auto 2em auto;
+    min-width: 290px;
+    z-index: 0;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    background: rgba(255,255,255,.75);
+    transition: background 1s ease-out;
+    
+    user-select: none;
+    animation: fly-in-from-left 0.5s 0.5s ease both;
+    transform-origin:top left;
+}
+
+.card:nth-child(even) {
+    animation-name: fly-in-from-right;
+    animation-delay:0.5s;
+    transform-origin:top right;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.4);
+    background: rgba(255,255,255,1);
+}
+
+@keyframes fly-in-from-left {
+    from {
+        transform:translateY(15em) rotate(15deg);
+        opacity:0;
+    }
+}
+
+@keyframes fly-in-from-right {
+    from {
+        transform: translateY(15em) rotate(-15deg);
+        opacity:0;
+    }
+}
+
+.card-content {
+    width: auto;
+    padding: 1em;
+    z-index: 1;
+    text-align: left;
+}

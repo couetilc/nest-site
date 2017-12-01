@@ -1,0 +1,10 @@
+# Media Resources
+media
+
+# Vim Generated Files
+*.sw?
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
