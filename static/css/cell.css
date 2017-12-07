@@ -1,0 +1,35 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+background {
+    display: flex;
+    flex-direction: column;
+}
+
+div.generation {
+    display: flex;
+    flex-direction: row;
+    height: 5px;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+div.cell {
+    float: left;
+    background-color:green;
+    height: 5px;
+    width: 5px;
+    margin: 0px;
+    padding: 0px;
+}
+
+div.active {
+    background-color: red;
+}
+
+div.inactive {
+    background-color: black;
+}

@@ -1,24 +1,16 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <style>
-            #row div {
-                background-color: green;
-                height: 5px;
-                margin-bottom: 10px;
-                display: inline-block;
-                width: 5px;
-                margin: 2px;
-            }
-            #row div.active {
-                background-color: red;
-            }
-            #row div.inactive {
-                background-color: black;
-            }
-        </style>
+        <title>1D Cells</title>
+
+        <!-- JQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!-- CSS Styles -->
+        <link rel="stylesheet" href="static/css/cell.css">
+
     </head>
     <body>
-        <div id="row"></div>
+        <div class="background" id="surface"></div>
         <!-- 
         See here for adding elements until they are not visible:
         https://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
@@ -26,21 +18,7 @@
         Here's the code they wrote during the episode:
         https://gist.github.com/mpj/94427edd9a5ed4d2cc677f1ae0a0558b
         -->
-        <script>
-
-            function randomBinary() {
-                let min = 0;
-                let max = 1;
-                return Math.floor(
-                    Math.random() * (max - min + 1)
-                )           
-            }
-            for (let i = 0; i < 101; i++) {
-                let div = document.createElement('div');
-                div.classList.add(randomBinary() ? 'active' : 'inactive')
-                document.getElementById('row').appendChild(div);
-            }
-        </script>
-
-    </body>
+        <script src="static/js/cell.js"></script>
+        <script src="static/js/automata.js"></script>
+        </body>
 </html>
