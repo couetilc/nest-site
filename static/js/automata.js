@@ -1,4 +1,7 @@
 /* Library of Cellular Automata Functions
+ * TODO - THOUGHTS
+ *      : Integrate some Trie structure to speed up string lookup and/or
+ *          computation
  *
  * What is a cell?
  *  A cell has one of two states, alive or dead, represented by a binary digit 
@@ -52,6 +55,8 @@
  *  seed: A generation that will act as generation #0 of the surface.
  *        If not initialized, the seed will be a single centered alive cell.
  */
+//TODO: Change arguments below to (ruleset, surface_param, seed)
+//  where surface_param = { ngen: int, popgen: int}
 function generateSurface(ruleset, nGen, sizeGen, seed) {
     //number and size of generations must be greater than 0.
     if (!(nGen > 0 && sizeGen > 0)) {
