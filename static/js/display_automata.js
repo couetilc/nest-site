@@ -18,9 +18,9 @@ const CELL_PARAM = { dim1 : 5, dim2 : 5 };
 var calcSurfaceDim = function (ws, cp) {
     return {
         // Number of cells that fit in a generation given the window state
-        popgen : Math.floor(ws.docWidth / cp.dim1),
+        sizegen : Math.floor(ws.docWidth / cp.dim1),
         // Number of generations that fit in the given window state.
-        ngen : Math.floor(ws.docHeight / cp.dim2)
+        numgen : Math.floor(ws.docHeight / cp.dim2)
     }
 };
 
@@ -32,8 +32,6 @@ var instantiateSurface = function (lib, dim, rule, elem, seed) {
         elem : elem
     }
 };
-
-/******* End of Surface Functions                               *******/
 
 
 /******* DOM Manipulation Functions                             *******/
@@ -52,8 +50,6 @@ var mutateDOMSurface = function (sf, ws) {
     //TODO
     //e.g. $('#' + id)
 };
-
-/******* END                                                    *******/
 
 
 /******* Cellular Automata Libraries                            *******/
@@ -118,50 +114,50 @@ const AutomataLib1D8bit = {
      *                  the states of a cell's neighbors, and the
      *                  corresponding value is the rule's digit at the key's 
      *                  numeral. e.g. For rule=30, "010" -> "1" & "000" -> "0"
-     *       param:     Object with properties popgen and ngen.
-     *                  popgen = number of cells in each generation.
-     *                  ngen = number of generations in the surface.
+     *       param:     Object with properties sizegen and numgen.
+     *                  sizegen = number of cells in each generation.
+     *                  numgen = number of generations in the surface.
      *       seed:      Optional string that acts as the first generation for
      *                  the generated surface.  Defaults to a string the size
-     *                  of param.popgen filled with "0" except for a single
+     *                  of param.sizegen filled with "0" except for a single
      *                  centered "1" (left-bias e.g. length=4 -> seed="0100").
      */
     generateSurface : (ruleset, param, seed) => {
         let surface = null;
         //If parameter is not well initialized, nothing to generate.
-        if (!param || param.ngen < 0 || param.popgen < 0) {
+        if (!param || param.numgen < 0 || param.sizegen < 0) {
             return surface;
         }
 
         //If seed is not properly intialized, produce a default seed.
-        if (!seed || seed.length != param.popgen) {
+        if (!seed || seed.length != param.sizegen) {
             let halveNround = (round, val) => round((val - 1) / 2);
-            let front = "0".repeat(halveNround(Math.floor, param.popgen));
-            let back = "0".repeat(halveNround(Math.ceil, param.popgen));
+            let front = "0".repeat(halveNround(Math.floor, param.sizegen));
+            let back = "0".repeat(halveNround(Math.ceil, param.sizegen));
             seed = front + "1" + back;
         }
 
         //Starting with the seed generation, new generations are calculated
         //until all generations have been generated.
-        surface = new Array(param.ngen);
+        surface = new Array(param.numgen);
         surface[0] = seed;
-        for (let i = 1; i < param.ngen; i++) {
+        for (let i = 1; i < param.numgen; i++) {
             surface[i] = this.birthGeneration(ruleset
                                              , surface[i - 1]
-                                             , param.popgen
+                                             , param.sizegen
                                              );
         }
 
         return surface;
     },
 
-    birthGeneration : (ruleset, old_gen, size_gen) => {
+    birthGeneration : (ruleset, oldgen, sizegen) => {
         
     },
     
     /*Resizes the cellular automata by either truncating width/length in the 
      * event of a resize smaller operation, or by wrapping the width/length 
-     * in the event of a resize larger operation.  Returns the resized surface.
+     * in the event of a resize larger operation.  Returns the resized surface
      *
      * e.g. initial surface: nGen = 4, sizeGen = 4
      *                       A B C D
@@ -189,8 +185,6 @@ const AutomataLib1D8bit = {
     }
 };
 
-/******* End of Libraries                                       *******/
-
 
 /******* Initialized Surfaces                                   *******/
 
@@ -201,8 +195,6 @@ surfaces.background = instantiateSurface(
     , document.getElementById('bg-surface')
     , null
     );
-
-/******* End Initialization                                     *******/
 
 
 /******* Event Triggers                                         *******/
@@ -216,5 +208,3 @@ $(document).ready(
 $(window).on('resize',
     surfaces.map( sf => mutateDOMSurface(sf, WindowState()) )
 );
-
-/******* End of Event Triggers                                  ******/
