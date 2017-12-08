@@ -8,14 +8,12 @@
  * Trie structure?
  */
 
-//TODO: MODIFY generateSurface IN "automata.js" and then copy everything
 
-//Holds all cellular automata surfaces in the Document
-var surfaces = {};
+var surfaces = {};  //all cellular automata surfaces in the Document
+const CELL_PARAM = { dim1 : 5, dim2 : 5 };
 
-//Parameters for the cells that compose the generations.
-//  Determines the number of cells to display within the window.
-const CELL_CONFIG = { dim1 : 5, dim2 : 5 }
+
+/******* DOM Manipulation Functions                             *******/
 
 var WindowState = function () { 
     return {
@@ -26,6 +24,7 @@ var WindowState = function () {
     }
 };
 
+
 var calcSurfaceDim = function (ws, cell_param) {
     return {
         // Number of cells that fit in a generation given the window state
@@ -33,13 +32,36 @@ var calcSurfaceDim = function (ws, cell_param) {
         // Number of generations that fit in the given window state.
         ngen : Math.floor(ws.docHeight / cell_param.dim2)
     }
-}
-
-////////
-//Cellular Automata Libraries (each manipulates a different type of Automata)
+};
 
 
-/* Library of 1-dimensional 3-bit Cellular Automata Functions
+var mutateDOMSurfaces = function (ws, sfs, elem) {
+    for (sf in sfs) {
+        mutateDOMSurface(ws, sf, CC, elem);
+    }
+};
+
+
+var mutateDOMSurface = function (ws, sf, elem) {
+    //TODO
+    //e.g. $('#' + id)
+};
+
+
+var instantiateSurface = function (lib, dim, rule, seed) {
+    return {
+        surface : lib.generateSurface(lib.generateRuleset(rule), dim, seed),
+        lib : lib
+    }
+};
+
+/******* END                                                    *******/
+
+
+/******* Cellular Automata Libraries                            *******/
+/*** (each manipulates a different type of Automata)                ***/
+
+/* Library of 1-dimensional 3-bit Cellular Automata Functions (
  * TODO - THOUGHTS
  *      : Integrate some Trie structure to speed up string lookup and/or
  *          computation
@@ -53,7 +75,6 @@ var calcSurfaceDim = function (ws, cell_param) {
  *  represented by a string of bits, whose bit values define the state of a
  *  cell.
  *
- *
  * What is a surface?
  *  An ordered collection of generations.  Each generation should be of the
  *  same size. In this implementation, a surface is an Array of strings, each
@@ -63,10 +84,10 @@ var calcSurfaceDim = function (ws, cell_param) {
  *  A cellular automaton is a grid of cells that change state over
  *  time according to some rule defined by its neighbors.  In this
  *  implementation the grid is a single generation on the surface.  Its cells'
- *  neighbors are the previous generations cells at the index positions right
+ *  neighbors are the previous generations cells at the index positions left
  *  of, equal to, and right of the current cell's index.
  *
- * An example using 4-bit integers as the storage value for all generations
+ * An example using strings as the storage value for each generation
  *  surface:   c0  c1  c2  c3
  *  e.g.    g0  0   0   1   1       Generation Format = String of length 4
  *          g1  A   B   C   D       Neighbor Format = (left, center, right)
@@ -116,7 +137,7 @@ const AutomataLib1D8bit = {
 
         //If seed is not properly intialized, produce a default seed.
         if (!seed || seed.length != param.popgen) {
-            let halveNround = (f, val) => f((val - 1) / 2);
+            let halveNround = (round, val) => round((val - 1) / 2);
             let front = "0".repeat(halveNround(Math.floor, param.popgen));
             let back = "0".repeat(halveNround(Math.ceil, param.popgen));
             seed = front + "1" + back;
@@ -140,9 +161,9 @@ const AutomataLib1D8bit = {
         
     },
     
-    /*Resizes the cellular automata by either truncating width/length in the event
-     * of a resize smaller operation, or by wrapping the width/length in the event
-     * of a resize larger operation.  Returns the resized surface.
+    /*Resizes the cellular automata by either truncating width/length in the 
+     * event of a resize smaller operation, or by wrapping the width/length 
+     * in the event of a resize larger operation.  Returns the resized surface.
      *
      * e.g. initial surface: nGen = 4, sizeGen = 4
      *                       A B C D
@@ -150,52 +171,35 @@ const AutomataLib1D8bit = {
      *                       I J K L
      *                       M N O P
      *
-     *      resize smaller: nGen=2, sizeGen=3; resize larger: nGen=6, sizeGen=10
-     *                      A B C                             A B C D A B C D A B
-     *                      E F G                             E F G H E F G H E F
-     *                                                        I J K L I J K L I J
-     *                                                        M N O P M N O P M N
-     *                                                        A B C D A B C D A B
-     *                                                        E F G H E F G H E F
+     *      resize smaller: nGen=2, sizeGen=3
+     *                       A B C                             
+     *                       E F G                             
+     *      resize larger: nGen=6, sizeGen=10
+     *                       A B C D A B C D A B
+     *                       E F G H E F G H E F
+     *                       I J K L I J K L I J
+     *                       M N O P M N O P M N
+     *                       A B C D A B C D A B
+     *                       E F G H E F G H E F
      */
-    resizeGeneration : (surface, param) {
+    resizeGeneration : (surface, param) => {
 
     },
 
-    generateRuleset : (rule) {
+    generateRuleset : (rule) => {
         
     }
 };
 
-
-//End of Libraries
-////////
+/******* End of Libraries                                       *******/
 
 
-var mutateDOMSurfaces = function (ws, sfs, elem) {
-    for (sf in sfs) {
-        mutateDOMSurface(ws, sf, CC, elem);
-    }
-};
-
-
-var mutateDOMSurface = function (ws, sf, elem) {
-    //e.g. $('#' + id)
-};
-
-
-var instantiateSurface = function (lib, dim, rule, seed) {
-    return {
-        surface : lib.generateSurface(lib.generateRuleset(rule), dim, seed),
-        lib : lib
-    }
-}
-
+/******* Event Triggers                                         *******/
 
 $(document).ready( function () {
     surfaces.background = instantiateSurface(
         AutomataSurface1D8bit
-        , calcSurfaceDim( WindowState() , CELL_CONFIG)
+        , calcSurfaceDim( WindowState() , CELL_PARAM)
         , 30
         , null
         );
@@ -216,3 +220,5 @@ $(window).on(
         , document.getElementById('bg-surface')
         );
 );
+
+/******* End of Event Triggers                                  ******/
