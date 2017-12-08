@@ -15,7 +15,7 @@ const CELL_PARAM = { dim1 : 5, dim2 : 5 };
 
 /******* Surface Functions                                      *******/
 
-var calcSurfaceDim = function (ws, cp) {
+var calcSurfaceDim = (ws, cp) => {
     return {
         // Number of cells that fit in a generation given the window state
         sizegen : Math.floor(ws.docWidth / cp.dim1),
@@ -25,9 +25,9 @@ var calcSurfaceDim = function (ws, cp) {
 };
 
 
-var instantiateSurface = function (lib, dim, rule, elem, seed) {
+var instantiateSurface = (lib, dim, rule, elem, seed) => {
     return {
-        surface : lib.generateSurface(lib.generateRuleset(rule), dim, seed),
+        sf : lib.generateSurface(lib.generateRuleset(rule), dim, seed),
         lib : lib,
         elem : elem
     }
@@ -36,7 +36,7 @@ var instantiateSurface = function (lib, dim, rule, elem, seed) {
 
 /******* DOM Manipulation Functions                             *******/
 
-var WindowState = function () { 
+var WindowState = () => { 
     return {
         windowHeight : $(window).height(),
         windowWidth : $(window).width(),
@@ -46,7 +46,7 @@ var WindowState = function () {
 };
 
 
-var mutateDOMSurface = function (sf, ws) {
+var mutateDOMSurface = (sf, ws) => {
     //TODO
     //e.g. $('#' + id)
 };
@@ -152,7 +152,17 @@ const AutomataLib1D8bit = {
     },
 
     birthGeneration : (ruleset, oldgen, sizegen) => {
-        
+        let hood, newgen = "";       
+        let mod = (val, div) => val - div * Math.floor(val / div);
+
+        for (let i = 0; i < sizegen; i++) {
+            hood = oldgen[ mod(i - 1, sizegen) ]
+                   + oldgen[ mod(i, sizegen) ]
+                   + oldgen[ mod(i + 1, sizegen) ];
+            newgen += ruleset[hood];
+        }
+
+        return newgen;
     },
     
     /*Resizes the cellular automata by either truncating width/length in the 
@@ -177,11 +187,58 @@ const AutomataLib1D8bit = {
      *                       E F G H E F G H E F
      */
     resizeGeneration : (surface, param) => {
+        let newgen;
+        let newsize = param.sizegen;
+        let oldsize = surface.sf[0].length;
+        let newsf = new Array(param.numgen);
 
+        //copying old generations in chunks to minimize string concat ops
+        for (let gen = 0; gen < param.numgen; gen++) {
+            let makeChunks = (size, maxchunk) => {
+                let quot = Math.floor(size / maxchunk);
+                let rem = size - maxchunk * Math.floor(size / maxchunk)
+
+                let chunks = [...Array(quot)].map(() => maxsize);
+                chunks.append[rem];
+            };
+
+            newgen = "";
+
+            for (let chunk in makeChunks(newsize, oldsize)) {
+                newgen += surface[gen].slice(0, chunk)
+            }
+
+            //ensure heterogenous generations
+            if (newgen.indexOf("0") === -1 || newgen.indexOf("1") === -1) {
+                let halveNround = (round, val) => round((val - 1) / 2);
+                let front = "0".repeat(halveNround(Math.floor, newsize));
+                let back = "0".repeat(halveNround(Math.ceil, newsize));
+
+                newgen = front + "1" + back;
+            }
+
+            newsf[gen] = newgen;
+        }
+
+        //wrap new generations
+        for (let gen = oldsize; i < newsize; gen++) {
+            newsf[gen] = newsf[gen % oldsize];
+        }
+
+        return newsf;
     },
 
     generateRuleset : (rule) => {
+        let rules = [];
         
+        for (let pos = 0; pos < 8; pos++) {
+            let pad = (binary, ndigits) => 
+                ("0".repeat(ndigits) + binary).slice(-1 * ndigits);
+
+            let state = 0x1 & (rule >>> pos);
+
+            rules[ pad(pos.toString(2), 3) ] = state.toString(2);
+        }
     }
 };
 
@@ -191,14 +248,13 @@ const AutomataLib1D8bit = {
 surfaces.background = instantiateSurface(
     AutomataSurface1D8bit
     , calcSurfaceDim( WindowState() , CELL_PARAM)
-    , 30
+    , rule = 30
     , document.getElementById('bg-surface')
-    , null
+    , seed = null
     );
 
 
 /******* Event Triggers                                         *******/
-
 
 $(document).ready(
     surfaces.map( sf => mutateDOMSurface(sf, WindowState()) )
@@ -207,4 +263,9 @@ $(document).ready(
 
 $(window).on('resize',
     surfaces.map( sf => mutateDOMSurface(sf, WindowState()) )
+    //consider: 
+    //  surfaces.map( (sf, ws = WindowState()) => mutateDOMSurface(
+    //      sf.lib.resizeGeneration(sf, calcSurfaceDim(ws, CELL_PARAM))
+    //      , ws)
+    //  )
 );
