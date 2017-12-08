@@ -9,8 +9,31 @@
  */
 
 
-var surfaces = {};  //all cellular automata surfaces in the Document
+var surfaces = {};
 const CELL_PARAM = { dim1 : 5, dim2 : 5 };
+
+
+/******* Surface Functions                                      *******/
+
+var calcSurfaceDim = function (ws, cp) {
+    return {
+        // Number of cells that fit in a generation given the window state
+        popgen : Math.floor(ws.docWidth / cp.dim1),
+        // Number of generations that fit in the given window state.
+        ngen : Math.floor(ws.docHeight / cp.dim2)
+    }
+};
+
+
+var instantiateSurface = function (lib, dim, rule, elem, seed) {
+    return {
+        surface : lib.generateSurface(lib.generateRuleset(rule), dim, seed),
+        lib : lib,
+        elem : elem
+    }
+};
+
+/******* End of Surface Functions                               *******/
 
 
 /******* DOM Manipulation Functions                             *******/
@@ -25,34 +48,9 @@ var WindowState = function () {
 };
 
 
-var calcSurfaceDim = function (ws, cell_param) {
-    return {
-        // Number of cells that fit in a generation given the window state
-        popgen : Math.floor(ws.docWidth / cell_param.dim1),
-        // Number of generations that fit in the given window state.
-        ngen : Math.floor(ws.docHeight / cell_param.dim2)
-    }
-};
-
-
-var mutateDOMSurfaces = function (ws, sfs, elem) {
-    for (sf in sfs) {
-        mutateDOMSurface(ws, sf, CC, elem);
-    }
-};
-
-
-var mutateDOMSurface = function (ws, sf, elem) {
+var mutateDOMSurface = function (sf, ws) {
     //TODO
     //e.g. $('#' + id)
-};
-
-
-var instantiateSurface = function (lib, dim, rule, seed) {
-    return {
-        surface : lib.generateSurface(lib.generateRuleset(rule), dim, seed),
-        lib : lib
-    }
 };
 
 /******* END                                                    *******/
@@ -194,31 +192,29 @@ const AutomataLib1D8bit = {
 /******* End of Libraries                                       *******/
 
 
+/******* Initialized Surfaces                                   *******/
+
+surfaces.background = instantiateSurface(
+    AutomataSurface1D8bit
+    , calcSurfaceDim( WindowState() , CELL_PARAM)
+    , 30
+    , document.getElementById('bg-surface')
+    , null
+    );
+
+/******* End Initialization                                     *******/
+
+
 /******* Event Triggers                                         *******/
 
-$(document).ready( function () {
-    surfaces.background = instantiateSurface(
-        AutomataSurface1D8bit
-        , calcSurfaceDim( WindowState() , CELL_PARAM)
-        , 30
-        , null
-        );
 
-    mutateDOMSurfaces(
-        WindowState()
-        , surfaces
-        , document.getElementById('bg-surface')
-        );
-});
+$(document).ready(
+    surfaces.map( sf => mutateDOMSurface(sf, WindowState()) )
+);
+    
 
-
-$(window).on(
-    'resize'
-    , mutateDOMSurfaces(
-        WindowState()
-        , surfaces
-        , document.getElementById('bg-surface')
-        );
+$(window).on('resize',
+    surfaces.map( sf => mutateDOMSurface(sf, WindowState()) )
 );
 
 /******* End of Event Triggers                                  ******/
