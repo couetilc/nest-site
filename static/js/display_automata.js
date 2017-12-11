@@ -34,7 +34,8 @@ var makeAutomata = function (lib, elem, rule, cparam, seed) {
         ruleset: ruleset,
         cparam: cparam,
         sparam: sparam,
-        sf: lib.generateSurface(ruleset, sparam, seed)
+        sf: lib.generateSurface(ruleset, sparam, seed),
+        draw: drawElementFunction[elem.tagName]
     };
 };
 
@@ -42,7 +43,7 @@ var makeAutomata = function (lib, elem, rule, cparam, seed) {
 var resizeAutomata = function (mata) {
     mata.state = ElementState(mata.elem);
     mata.sparam = calcSurfaceDim(mata.state, mata.cparam);
-    mata.sf = mata.lib.resizeSurface(mata.sf, mata.sparam);
+    mata.sf = mata.lib.resizeSurface(mata);
 
     return mata;
 }
@@ -56,11 +57,75 @@ var ElementState = function (elem) {
 };
 
 
-function mutateDOMState(mata) {
+var drawElementFunction = {
+    'CANVAS' : drawCanvas,
+    'DIV' : mutateDivState
+}
+
+
+function mutateDivState(mata) {
     //TODO
     //grab the elem within the surface and make it match the parameters
+    //by drawing div containers
     return;
 }
+
+function drawCanvas(mata) {
+    //resize canvas dimensions
+    mata.elem.height = mata.state.elemHeight;
+    mata.elem.width = mata.state.elemWidth;
+
+    let mod = (val, div) => val - div * Math.floor(val / div);
+
+    let ctx = mata.elem.getContext("2d");
+    //Param are: lib, elem, state {elemHeight, elemWidth}, ruleset
+    ////         cparam {dim1, dim2}, sparam {sizegen, numgen}
+    ////         sf, draw
+    //
+
+    function drawSurface() {
+        let x = 0, y = 0, g;
+        let wid = mata.state.elemWidth / mata.sparam.sizegen;
+        let len = mata.state.elemHeight / mata.sparam.numgen;
+
+        for (g = 0; g < mata.sparam.numgen; g++) {
+            drawGeneration(g);
+        }
+    }
+
+    function drawGeneration(gen) {
+        let wid = mata.state.elemWidth / mata.sparam.sizegen;
+        let len = mata.state.elemHeight / mata.sparam.numgen;
+
+        let c;
+        let x = 0;
+        let y = gen * len;
+
+        ctx.clearRect(x, y, mata.state.elemWidth, len);
+        ctx.beginPath();
+        for (c = 0; c < mata.sparam.sizegen; c++) {
+            if (mata.sf[gen][c] === "1") {
+                ctx.rect(x, y, wid, len);
+            }
+            x += wid;
+        }
+        ctx.fill();
+    }
+
+
+    function animationLoop() {
+        bgAF = requestAnimationFrame(animationLoop);
+        mata.sf[era % mata.sparam.numgen] = mata.lib.birthGeneration(mata.ruleset,
+                                                mata.sf[mod(era - 1, mata.sparam.numgen)],
+                                                mata.sparam.sizegen);
+        drawGeneration(era % mata.sparam.numgen);
+        era += 1;
+    }
+
+    drawSurface();
+    animationLoop();
+}
+
 
 
 var AutomataLib1D8bit = {
@@ -104,31 +169,40 @@ var AutomataLib1D8bit = {
         return newgen;
     },
     
-    resizeSurface : function (surface, param) {
+    resizeSurface : function (mata) {
         let newgen;
-        let newsize = param.sizegen;
-        let oldsize = surface.sf[0].length;
-        let newsf = new Array(param.numgen);
+        let newsize = mata.sparam.sizegen;
+        let oldsize = mata.sf[0].length;
+        let newsf = new Array(mata.sparam.numgen);
+
+        let halveNround = (round, val) => round((val - 1) / 2);
+
+        let makeChunks = (size, maxchunk) => {
+            let quot = Math.floor(size / maxchunk);
+            let rem = size - maxchunk * Math.floor(size / maxchunk);
+
+            let chunks = [];
+            for (let i = 0; i < quot; i++) {
+                chunks.push(maxchunk);
+            }
+            chunks.push(rem);
+
+            return chunks;
+        };
 
         //copying old generations in chunks to minimize string concat ops
-        for (let gen = 0; gen < param.numgen; gen++) {
-            let makeChunks = (size, maxchunk) => {
-                let quot = Math.floor(size / maxchunk);
-                let rem = size - maxchunk * Math.floor(size / maxchunk);
-
-                let chunks = [...Array(quot)].map(() => maxsize);
-                chunks.append[rem];
-            };
-
+        let copysize;
+        for (let gen = 0; gen < mata.sparam.numgen; gen++) {
             newgen = "";
 
-            for (let chunk in makeChunks(newsize, oldsize)) {
-                newgen += surface[gen].slice(0, chunk)
+            copysize = makeChunks(newsize, oldsize);
+            for (let c in copysize) {
+                newgen += mata.sf[gen].slice(0, copysize[c]);
             }
 
             //no homogeneous generations
+            
             if (newgen.indexOf("0") === -1 || newgen.indexOf("1") === -1) {
-                let halveNround = (round, val) => round((val - 1) / 2);
                 let front = "0".repeat(halveNround(Math.floor, newsize));
                 let back = "0".repeat(halveNround(Math.ceil, newsize));
 
@@ -138,7 +212,7 @@ var AutomataLib1D8bit = {
             newsf[gen] = newgen;
         }
 
-        for (let gen = oldsize; i < newsize; gen++) {
+        for (let gen = oldsize; gen < newsize; gen++) {
             newsf[gen] = newsf[gen % oldsize];
         }
 
@@ -163,6 +237,10 @@ var AutomataLib1D8bit = {
 
 
 document.addEventListener("DOMContentLoaded", (event) => {
+    era = 0;
+    console.log('domcontentloaded');
+    window.addEventListener("resize", resizeThrottler);
+
     Automata.background = makeAutomata(AutomataLib1D8bit,
                                        document.getElementById('bg-surface'),
                                        30,
@@ -170,17 +248,24 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                        null);
     for (let p in Automata) {
         if (Automata.hasOwnProperty(p)) {
-            mutateDOMState(Automata[p]);
+            Automata[p].draw(Automata[p]);
         }
     }
 });
 
+var rszAF, bgAF, era;
 
-document.addEventListener('resize', (event) => {
+function resizeThrottler () {
+    cancelAnimationFrame(bgAF);
+    resizePageEvent();
+}
+
+function resizePageEvent() {
     for (let p in Automata) {
         if (Automata.hasOwnProperty(p)) {
             Automata[p] = resizeAutomata(Automata[p]);
-            mutateDOMState(Automata[p]);
+            cancelAnimationFrame(bgAF);
+            Automata[p].draw(Automata[p]);
         }
     }
-});
+}

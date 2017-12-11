@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CSS Collapsing Navbar</title>
+    </head>
+
+    <body>
+
+        <nav class="fixed-top">
+
+            <!-- Navbar float at left upper corner of screen -->
+            <div class="nav-container nav-left">
+                <ul class="nav-menu slideDown item-divider">
+                    <li><a href="#">Nest</a></li>
+                    <li class="nav-dropdown">
+                        <a href="#">More Items<span class="nav-btn item-collapse-tr">+</span></a>
+                        <ul>
+                            <li>Sub Item 1</li>
+                            <li>
+                                <a href="#">Sub Item 2<span class="nav-btn item-collapse-tr">+</span></a>
+                                <ul>
+                                    <li>Mystery 1</li>
+                                    <li>Mystery 2</li>
+                                </ul>
+                            </li>
+                            <li>Sub Item 3</li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Portfolio</a></li>
+                    <li><a href="#">About</a></li>
+                </ul>
+            </div>
+
+            <!-- Navbar float at right upper corner or screen -->
+            <div class="nav-container nav-right">
+                <ul class="nav-menu slideDown item-divider">
+                    <li><a href="#"><span class="github">Github</span></a></li>
+                    <li><a href="#"><span class="linkedin">LinkedIn</span></a></li>
+                    <li><a href="#"><span class="facebook">Facebook</span></a></li>
+                </ul>
+            </div>
+
+        </nav>
+
+    </body>
+</html>
