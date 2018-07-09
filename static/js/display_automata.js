@@ -50,10 +50,11 @@ var resizeAutomata = function (mata) {
 
 
 var ElementState = function (elem) { 
+    console.log(elem);
     return {
-        elemHeight : elem.clientHeight,
-        elemWidth : elem.clientWidth
-    }
+        elemHeight : elem.parentElement.clientHeight,
+        elemWidth : elem.parentElement.clientWidth
+    };
 };
 
 
